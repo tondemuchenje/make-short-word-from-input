@@ -13,17 +13,21 @@ fileNames.forEach(fileName => {
 
         let inputWords = data.toString().split("\n");
         //validate input
-        const regExpCapitalLetters = new RegExp("[^A-Z]");
-        const inValidWords = inputWords.filter(word => word.match(regExpCapitalLetters) != null);
+        const regExpNotCapitalLetters = new RegExp("[^A-Z]");
+        const inValidWords = inputWords.filter(word => word.match(regExpNotCapitalLetters) != null);
         if (inValidWords.length > 0) {
-            console.error("\x1b[31m", `Invalid words: "${inValidWords.join(', ')}" found in file '${fileName}'. Words contains only capital letters!`);
+            console.error("\x1b[31m", `Invalid words "${inValidWords.join(', ')}" found in file '${fileName}'. Words should only capital letters!`);
             return;
         }
 
         //find the shortest word from the input values
         const shortestWord = findShortestWord([...inputWords]);
-        const score = (1 - (shortestWord.length / (inputWords.join("").length))) * 100;
 
+        //calculate score
+        const inputValues = inputWords.join("");
+        const score = (1 - (shortestWord.length / inputValues.length)) * 100;
+
+        //print results
         console.log(`Input file: ${fileName}`);
         console.table([{ input: inputWords.join(", "), result: shortestWord, score: Math.round(score) }]);
 
@@ -35,25 +39,32 @@ function findShortestWord(words) {
 
     words = mergeWordsWithSimilarCharacters(words);
 
-    //merge other words
+    //merge words where the last character of one word is the first character of another word
+    // or the first character of one word is the last character of another word
     for (let i = 0; i < words.length; i++) {
 
         const currentWord = words[i];
-        const firstCharacter = currentWord.charAt(0);
-        const lastCharacter = currentWord.charAt(currentWord.length - 1);
+        const firstCharacterOfCurrentWord = currentWord.charAt(0);
+        const lastCharacterOfCurrentWord = currentWord.charAt(currentWord.length - 1);
 
         for (let j = i + 1; j < words.length; j++) {
 
             const nextWord = words[j];
-            if (nextWord.startsWith(lastCharacter)) {
+            if (nextWord.startsWith(lastCharacterOfCurrentWord)) {
+                //merge currentWord and nextWord but don't repeat the last character from nextWord
                 words[i] = currentWord.slice(0, -1) + nextWord;
+                //"throw away" nextWord
                 words[j] = null;
                 break;
             }
 
-            if (nextWord.endsWith(firstCharacter)) {
+            if (nextWord.endsWith(firstCharacterOfCurrentWord)) {
+                //merge currentWord and nextWord but don't repeat the last character from nextWord
                 words[i] = nextWord + currentWord.slice(1);
+                //"throw away" nextWord
                 words[j] = null;
+                //after merging two words together, there is a chance that there is a smaller word that can now "fit" 
+                //into the new word so let's check that
                 break;
             }
         }
@@ -88,9 +99,9 @@ function mergeWordsWithSimilarCharacters(words) {
         for (let j = i - 1; j >= 0; j--) {
 
             //get the next word that appears in the input array after the current biggest word
-
             //since we have sorted the array by length of input words, the next word will be smaller or
             //equal in equal length(this handles duplicate words) compared to the current biggest word
+
             const nextWord = words[j];
             if (nextWord == null) {
                 continue;
@@ -105,7 +116,6 @@ function mergeWordsWithSimilarCharacters(words) {
 
             //maybe not the entire nextWord is included in bigWord so let's there are parts of nextWord 
             //that are included at the beginning or end of bigWord
-
             let forwardIndex = 1; //we don't want to start from the 
             let backWardIndex = nextWord.length - 1;
             while (forwardIndex < nextWord.length) {
@@ -128,7 +138,7 @@ function mergeWordsWithSimilarCharacters(words) {
             }
         }
     }
-
+    //if we have "thrown way" some words, let's reprocess the merge till we no more words to throw away
     if (words.some(word => word === null)) {
         return mergeWordsWithSimilarCharacters(words.filter(x => x !== null));
     }
