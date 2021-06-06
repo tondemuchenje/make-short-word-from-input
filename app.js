@@ -4,22 +4,19 @@ var fs = require('fs');
 const fileNames = process.argv.slice(2);
 
 fileNames.forEach(fileName => {
-    // input = ["DAS", "SIEMENS", "PANDAS"]
-    // input = ["DAS", "SIEMENS"]
 
     fs.readFile(fileName, 'utf8', (err, data) => {
         if (err) {
-            console.error(err);
+            console.error(err.message);
             return;
         }
 
-        var inputWords = data.toString().split("\n");
-
+        let inputWords = data.toString().split("\n");
         //validate input
-        const regExpCapitalLetters = /[A-Z]/;
-        const inValidWords = inputWords.filter(word => !regExpCapitalLetters.test(word));
+        const regExpCapitalLetters = new RegExp("[^A-Z]");
+        const inValidWords = inputWords.filter(word => word.match(regExpCapitalLetters) != null);
         if (inValidWords.length > 0) {
-            console.error(`Invalid input: "${inValidWords.join(', ')}". words contains only capital letters`);
+            console.error("\x1b[31m", `Invalid words: "${inValidWords.join(', ')}" found in file '${fileName}'. Words contains only capital letters!`);
             return;
         }
 
