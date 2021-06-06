@@ -1,0 +1,19 @@
+{
+  "name": "make-short-word-from-input",
+  "version": "1.0.0",
+  "description": "makes as short as possible a word that includes all the input values",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tondemuchenje/make-short-word-from-input.git"
+  },
+  "author": "Tonderai Muchenje",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/tondemuchenje/make-short-word-from-input/issues"
+  },
+  "homepage": "https://github.com/tondemuchenje/make-short-word-from-input#readme"
+}
