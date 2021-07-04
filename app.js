@@ -1,8 +1,8 @@
 var fs = require('fs');
 
 //get the list of fileNames from the console
-const fileNames = process.argv.slice(2);
-
+let fileNames = process.argv.slice(2);
+fileNames = ['inputWords.txt'];
 fileNames.forEach(fileName => {
 
     fs.readFile(fileName, 'utf8', (err, data) => {
@@ -23,17 +23,32 @@ fileNames.forEach(fileName => {
         //find the shortest word from the input values
         const shortestWord = findShortestWord([...inputWords]);
 
+        //validate result
+        let validResult = isValidResult(shortestWord, inputWords);
+
         //calculate score
         const inputValues = inputWords.join("");
         const score = (1 - (shortestWord.length / inputValues.length)) * 100;
 
         //print results
         console.log(`Input file: ${fileName}`);
-        console.table([{ input: inputWords.join(", "), result: shortestWord, score: Math.round(score) }]);
+        console.table([{ input: inputWords.join(", "), result: shortestWord, score: Math.round(score), isValidResult: validResult }]);
+
 
     });
 });
 
+
+function isValidResult(bigWord, words) {
+    let result = true;
+    words.forEach(item => {
+        if (!bigWord.includes(item)) {
+            result = false;
+        }
+    })
+
+    return result;
+}
 
 function findShortestWord(words) {
 
@@ -91,7 +106,7 @@ function mergeWordsWithSimilarCharacters(words) {
     for (let i = words.length - 1; i >= 0; i--) {
 
         //get the current biggest word
-        const bigWord = words[i];
+        let bigWord = words[i];
         if (bigWord == null) {
             continue;
         }
@@ -107,21 +122,22 @@ function mergeWordsWithSimilarCharacters(words) {
                 continue;
             }
 
-            //check if the next biggest word contains characters are already part of the current biggest word
+            //check if the next biggest word contains characters that are already part of the current biggest word
             if (bigWord.includes(nextWord)) {
                 //since nextWord is included in bigWord, we can "throw away" nextWord
                 words[j] = null;
                 continue;
             }
 
-            //maybe not the entire nextWord is included in bigWord so let's there are parts of nextWord 
+            //maybe not the entire nextWord is included in bigWord so let's check if there are parts of nextWord 
             //that are included at the beginning or end of bigWord
-            let forwardIndex = 1; //we don't want to start from the 
+            let forwardIndex = 1; //we don't want to start from the beginning
             let backWardIndex = nextWord.length - 1;
             while (forwardIndex < nextWord.length) {
                 let subStringOfNextWord = nextWord.slice(forwardIndex);
                 if (bigWord.startsWith(subStringOfNextWord) && subStringOfNextWord.length > 1) {
                     words[i] = nextWord.substring(0, nextWord.length - subStringOfNextWord.length) + bigWord;
+                    bigWord = words[i];
                     words[j] = null;
                     break;
                 }
@@ -130,6 +146,7 @@ function mergeWordsWithSimilarCharacters(words) {
                 if (bigWord.endsWith(subStringOfNextWord) && subStringOfNextWord.length > 1) {
                     //since nextWord is included in bigWord, we can "throw away" nextWord
                     words[i] = bigWord + nextWord.substring(subStringOfNextWord.length);
+                    bigWord = words[i];
                     words[j] = null;
                     break;
                 }
@@ -138,7 +155,8 @@ function mergeWordsWithSimilarCharacters(words) {
             }
         }
     }
-    //if we have "thrown way" some words, let's reprocess the merge till we no more words to throw away
+
+    //if we have "thrown way" some words, let's reprocess the merge till we have no more words to throw away
     if (words.some(word => word === null)) {
         return mergeWordsWithSimilarCharacters(words.filter(x => x !== null));
     }

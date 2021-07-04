@@ -4,7 +4,7 @@
   "description": "makes as short as possible a word that includes all the input values",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node app.js inputWords.txt"
   },
   "repository": {
     "type": "git",
