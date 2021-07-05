@@ -2,7 +2,6 @@ var fs = require('fs');
 
 //get the list of fileNames from the console
 let fileNames = process.argv.slice(2);
-fileNames = ['inputWords.txt'];
 fileNames.forEach(fileName => {
 
     fs.readFile(fileName, 'utf8', (err, data) => {
